@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SMART GLOVE AI Communication Assistant">
+  <title>GESTURE NEXT — AI Communication Assistant</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <div class="brand">
+        <img class="brand-logo" src="gesture-next-brand.jpeg" alt="Gesture Next — Bridging Minds">
+      </div>
+      <nav class="nav-list">
+        <button class="nav-item active" data-page="dashboard" aria-label="Dashboard"><span>⌂</span>Dashboard</button>
+        <button class="nav-item" data-page="connect" aria-label="Connect"><span>⌁</span>Connect</button>
+        <button class="nav-item" data-page="history" aria-label="History"><span>◷</span>History</button>
+        <button class="nav-item" data-page="analytics" aria-label="Analytics"><span>◫</span>Analytics</button>
+        <button class="nav-item" data-page="settings" aria-label="Settings"><span>⚙</span>Settings</button>
+        <button class="nav-item" data-page="handspeak" aria-label="Handspeak"><span>🖐</span>Handspeak</button>
+      </nav>
+      <div class="sidebar-sos">
+        <button class="sos-btn" id="sosBtn"><span>♡</span> Emergency SOS</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="mobile-brand"><img src="gesture-next-brand.jpeg" alt="Gesture Next — Bridging Minds"></div>
+          <div class="page-kicker" id="pageKicker">AI Communication Assistant</div>
+        </div>
+        <div class="top-actions">
+          <label class="top-language" title="Interface language">
+            <span aria-hidden="true">文</span>
+            <select id="topLanguage" aria-label="Interface language">
+              <option value="en-IN">English</option>
+              <option value="ta-IN">தமிழ்</option>
+            </select>
+          </label>
+          <button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
+          <button class="icon-btn" id="notificationBtn" aria-label="Notifications">♢</button>
+          <div class="status-pill disconnected" id="statusPill"><span class="status-dot"></span><span id="statusText">Disconnected</span></div>
+        </div>
+      </header>
+
+      <section id="page-dashboard" class="page active">
+        <article class="live-gesture-banner" id="liveGestureBanner" aria-live="assertive" aria-atomic="true">
+          <div class="live-gesture-left">
+            <div class="live-gesture-icon" id="liveGestureIcon">👋</div>
+            <div>
+              <span class="eyebrow">LIVE GESTURE</span>
+              <h2 id="liveGestureText">READY</h2>
+              <p id="liveGestureDetail">Connect your Smart Glove and bend a finger to detect a message.</p>
+            </div>
+          </div>
+          <div class="live-gesture-status">
+            <span class="live-status-dot" id="liveStatusDot"></span>
+            <span id="liveGestureConnection">Waiting for Bluetooth</span>
+          </div>
+        </article>
+        <div class="hero-card">
+          <div class="hero-copy">
+            <span class="eyebrow">Your Hands Can Speak</span>
+            <h1>GESTURE NEXT</h1>
+            <p>AI-powered assistive communication for natural, accessible conversations.</p>
+            <div class="hero-badge">✦ AI enabled</div>
+          </div>
+          <div class="hero-glove" aria-hidden="true">🖐</div>
+          <div class="hero-orb orb-one"></div><div class="hero-orb orb-two"></div>
+        </div>
+
+        <div class="grid two-col">
+          <article class="card connection-card">
+            <div class="card-heading"><div><span class="mini-icon purple">⌁</span><div><h2>Glove Connection</h2><p>Communication link</p></div></div><span class="live-badge" id="connectionBadge">Offline</span></div>
+            <div class="connection-details">
+              <div><span>Connection type</span><strong id="connectionType">None</strong></div>
+              <div><span>Device</span><strong id="deviceName">Not connected</strong></div>
+              <div><span>IP address</span><strong id="ipAddress">—</strong></div>
+            </div>
+            <div class="button-row">
+              <button class="btn primary" data-page="connect">Connect</button>
+              <button class="btn ghost" id="disconnectBtn">Disconnect</button>
+            </div>
+          </article>
+
+          <article class="card voice-card">
+            <div class="card-heading">
+              <div><span class="mini-icon purple">🎙</span><div><h2>Speak to Smart Glove</h2><p>Say something and see it on the display</p></div></div>
+              <span class="live-badge" id="speechStatus">Ready</span>
+            </div>
+            <div class="voice-display" id="voiceDisplay" aria-live="polite">
+              <span class="label">YOUR SPEECH</span>
+              <div id="spokenText">Tap the microphone and start speaking...</div>
+              <div class="speech-avatar speech-avatar-3d" id="speechAvatar" aria-live="polite" aria-label="3D human communication avatar">
+                <div class="avatar3d-shell">
+                  <div class="avatar3d-container" id="avatar3dContainer" aria-label="Full 3D human avatar"></div>
+                  <div class="avatar3d-loading" id="avatar3dStatus">Loading your avatar…</div>
+                </div>
+                <div class="avatar-expression" id="avatar3dExpression">Ready to express your words</div>
+              </div>
+            </div>
+            <div class="voice-actions">
+              <button class="btn mic-btn" id="micBtn" aria-label="Start voice recognition">🎙 <span id="micBtnText">Start Speaking</span></button>
+              <button class="btn primary" id="speakVoiceBtn" aria-label="Speak the displayed text">🔊 Speak</button>
+              <button class="btn ghost" id="copyVoiceBtn" aria-label="Copy spoken text">▣ Copy</button>
+            </div>
+            <div class="voice-note">Voice recognition uses your browser microphone. Allow microphone access when prompted.</div>
+          </article>
+
+          <article class="card current-card" id="currentGestureCard">
+            <div class="card-heading"><div><span class="mini-icon blue">✋</span><div><h2>Current Gesture</h2><p>Latest recognized message</p></div></div><span class="recognition-dot">● Live</span></div>
+            <div class="gesture-main">
+              <div class="gesture-symbol" id="gestureSymbol">👋</div>
+              <div><span class="label">DETECTED GESTURE</span><h2 id="currentGesture">HELLO</h2><p id="gestureMessage">Gesture recognized successfully</p></div>
+            </div>
+            <div class="confidence"><div class="confidence-head"><span>AI Confidence</span><strong id="confidenceValue">98.7%</strong></div><div class="progress"><span id="confidenceBar" style="width:98.7%"></span></div></div>
+            <div class="current-meta"><span id="gestureTimestamp">—</span><span id="gestureSource">Demo</span></div>
+            <div class="button-row"><button class="btn primary" id="speakBtn">🔊 Speak</button><button class="btn ghost" id="copyBtn">▣ Copy</button></div>
+          </article>
+        </div>
+
+        <div class="section-title"><div><span class="eyebrow purple-text">QUICK ACTIONS</span><h2>Do more with one tap</h2></div></div>
+        <div class="grid quick-grid">
+          <button class="action-card purple-tile" id="quickSpeak"><span class="action-icon">🔊</span><span><strong>Speak</strong><small>Read the current gesture aloud</small></span><b>→</b></button>
+          <button class="action-card blue-tile" data-page="connect"><span class="action-icon">⌁</span><span><strong>Connect</strong><small>Bluetooth</small></span><b>→</b></button>
+        </div>
+
+        <div class="section-title"><div><span class="eyebrow purple-text">COMMON GESTURES</span><h2>Quickly try a message</h2></div><button class="text-btn" data-page="history">View history →</button></div>
+        <div class="gesture-grid" id="gestureGrid"></div>
+
+        <div class="section-title"><div><span class="eyebrow purple-text">RECENT GESTURES</span><h2>Latest activity</h2></div></div>
+        <div class="card recent-card" id="recentList"></div>
+
+        <div class="section-title"><div><span class="eyebrow purple-text">STATISTICS</span><h2>Communication at a glance</h2></div></div>
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="demo-panel card">
+          <div><span class="demo-chip">DEMO MODE</span><h2>Try the Smart Glove without hardware</h2><p>Simulation updates the dashboard exactly like an incoming ESP32 message.</p></div>
+          <div class="demo-controls"><select id="demoGesture" aria-label="Demo gesture"></select><button class="btn primary" id="simulateBtn">Simulate Gesture</button></div>
+        </div>
+      </section>
+
+      <section id="page-connect" class="page">
+        <div class="page-heading"><span class="eyebrow purple-text">CONNECTION</span><h1>Connect Your Smart Glove</h1><p>Choose how your glove communicates with this device.</p></div>
+        <div class="connection-methods">
+          <article class="method-card" id="bluetoothCard">
+            <div class="method-icon purple">ᛒ</div><span class="method-label">BLUETOOTH</span><h2>Bluetooth Low Energy</h2><p>Connect directly to your ESP32 Smart Glove using the browser Web Bluetooth API.</p>
+            <div class="config-note">SERVICE_UUID and CHARACTERISTIC_UUID are configured in <code>bluetooth.js</code>.</div>
+            <button class="btn primary full" id="scanBluetoothBtn">Scan Devices</button>
+            <div class="connection-message" id="bluetoothMessage">Ready to scan.</div>
+          </article>
+          </div><div class="card architecture-card"><span class="eyebrow purple-text">REAL-TIME ARCHITECTURE</span><div class="architecture"><span>SMART GLOVE</span><b>↓</b><span>ESP32 + Sensors</span><b>↓</b><span class="split">Bluetooth BLE</span><b>↓</b><span>Website</span><b>↓</b><span>Gesture Parser → Text → Speech</span></div></div>
+      </section>
+
+      <section id="page-history" class="page">
+        <div class="page-heading"><span class="eyebrow purple-text">HISTORY</span><h1>Gesture History</h1><p>Your recognized messages are stored locally on this device.</p></div>
+        <div class="card filter-card"><div class="search-box">⌕ <input id="historySearch" placeholder="Search gestures..." aria-label="Search gestures"></div><select id="historyFilter"><option value="all">All connections</option><option value="bluetooth">Bluetooth</option><option value="demo">Demo</option></select><button class="btn danger-outline" id="clearHistoryBtn">Clear History</button></div>
+        <div class="card table-card"><div class="table-wrap"><table><thead><tr><th>Interaction</th><th>Confidence</th><th>Time</th><th>Source</th></tr></thead><tbody id="historyTable"></tbody></table></div></div>
+      </section>
+
+      <section id="page-analytics" class="page">
+        <div class="page-heading"><span class="eyebrow purple-text">ANALYTICS</span><h1>Communication Analytics</h1><p>Simple, local insights from your gesture history.</p></div>
+        <div class="stats-grid" id="analyticsStats"></div>
+        <div class="grid two-col analytics-grid"><article class="card"><div class="card-heading"><div><h2>Gesture Frequency</h2><p>Recognized messages</p></div></div><div id="frequencyChart" class="bar-chart"></div></article><article class="card"><div class="card-heading"><div><h2>Confidence</h2><p>Average recognition quality</p></div></div><div class="confidence-ring" id="confidenceRing"><div><strong id="ringValue">0%</strong><span>average</span></div></div></article></div>
+      </section>
+
+      <section id="page-handspeak" class="page">
+        <div class="page-heading"><span class="eyebrow purple-text">HAND SPEAK</span><h1>Handspeak</h1><p>Speak or type a message and watch it fingerspelled.</p></div>
+        <div class="handspeak-frame-wrap"><iframe class="handspeak-frame" src="handspeak/index.html" title="Handspeak fingerspelling interface" allow="microphone" loading="eager"></iframe></div>
+      </section>
+
+      <section id="page-settings" class="page">
+        <div class="page-heading"><span class="eyebrow purple-text">SETTINGS</span><h1>Settings</h1><p>Personalize recognition, speech, appearance and data.</p></div>
+        <div class="settings-grid">
+          <article class="card settings-card"><span class="eyebrow purple-text">COMMUNICATION</span><h2>Communication Settings</h2><label class="setting-row"><span>Connection method<small>Preferred hardware link</small></span><select id="connectionPreference"><option value="bluetooth">Bluetooth</option></select></label></article>
+          <article class="card settings-card"><span class="eyebrow purple-text">RECOGNITION</span><h2>Recognition Settings</h2><label class="toggle-row"><span>Auto recognition<small>Process incoming gestures automatically</small></span><input type="checkbox" id="autoRecognition" checked><i></i></label><label class="toggle-row"><span>Auto speech<small>Speak recognized gestures automatically</small></span><input type="checkbox" id="autoSpeech"><i></i></label><label class="setting-row"><span>Confidence threshold<small>Ignore messages below this value</small></span><input class="range" id="confidenceThreshold" type="range" min="0" max="100" value="70"><strong id="thresholdValue">70%</strong></label></article>
+          <article class="card settings-card"><span class="eyebrow purple-text">SPEECH</span><h2>Speech Settings</h2><label class="setting-row"><span>Language<small>Voice recognition and speech language</small></span><select id="speechLanguage"></select></label><label class="setting-row"><span>Voice</span><select id="speechVoice"><option value="">Default voice</option></select></label><label class="setting-row"><span>Speech rate</span><input class="range" id="speechRate" type="range" min=".5" max="2" step=".1" value="1"><strong id="rateValue">1.0×</strong></label><label class="setting-row"><span>Volume</span><input class="range" id="speechVolume" type="range" min="0" max="1" step=".05" value="1"><strong id="volumeValue">100%</strong></label></article>
+          <article class="card settings-card"><span class="eyebrow purple-text">APPEARANCE</span><h2>Appearance</h2><label class="toggle-row"><span>Dark mode<small>Switch between light and dark interface</small></span><input type="checkbox" id="darkMode"><i></i></label><label class="toggle-row"><span>Soft pastel mode<small>Use the lavender/blue palette</small></span><input type="checkbox" id="pastelMode" checked><i></i></label></article>
+          <article class="card settings-card"><span class="eyebrow purple-text">DATA</span><h2>Data Management</h2><div class="button-stack"><button class="btn ghost full" id="exportJsonBtn">Export History as JSON</button><button class="btn ghost full" id="exportCsvBtn">Export History as CSV</button><button class="btn danger-outline full" id="clearHistorySettingsBtn">Clear Gesture History</button></div></article>
+          <article class="card settings-card about-card"><span class="eyebrow purple-text">ABOUT</span><h2>SMART GLOVE</h2><p>Version 1.0</p><p>AI-powered assistive communication system.</p><div class="demo-chip">DEMO + BLE READY</div></article>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Mobile navigation">
+      <button class="nav-item active" data-page="dashboard"><span>⌂</span>Home</button>
+      <button class="nav-item" data-page="connect"><span>⌁</span>Connect</button>
+      <button class="nav-item" data-page="history"><span>◷</span>History</button>
+      <button class="nav-item" data-page="analytics"><span>◫</span>Analytics</button>
+      <button class="nav-item" data-page="settings"><span>⚙</span>Settings</button>
+      <button class="nav-item" data-page="handspeak"><span>🖐</span>Handspeak</button>
+    </nav>
+  </div>
+
+  <div class="modal-backdrop" id="sosModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="sosTitle">
+      <div class="modal-icon">♡</div><h2 id="sosTitle">Emergency SOS</h2>
+      <p>Are you sure you want to activate emergency assistance?</p>
+      <div class="button-row"><button class="btn ghost" id="cancelSos">Cancel</button><button class="btn sos-confirm" id="activateSos">Activate SOS</button></div>
+    </div>
+  </div>
+
+  <script src="gestures.js"></script>
+  <script src="speech.js"></script>
+  <script src="avatar3d.js?v=4"></script>
+  <script src="bluetooth.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
