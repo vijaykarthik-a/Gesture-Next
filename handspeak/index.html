@@ -1,0 +1,893 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Handspeak — say it, watch it signed</title>
+<style>
+  :root{
+    --bg-0:#12151A;
+    --bg-1:#1B1F26;
+    --bg-2:#232833;
+    --ink-0:#F2EEE6;
+    --ink-1:#B7BCC6;
+    --ink-2:#787E8B;
+    --gold:#E7A94C;
+    --gold-dim:#8A6A34;
+    --teal:#4FB8A6;
+    --line:#31363F;
+    --skin-hi:#F6D3AE;
+    --skin-base:#E5AE81;
+    --skin-shadow:#B87F55;
+    --radius:16px;
+    --serif:"Fraunces", "Iowan Old Style", Georgia, serif;
+    --sans:"IBM Plex Sans", "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: light){ /* keep dark stage regardless — intentional */ }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1100px 620px at 78% -10%, #23293380 0%, transparent 60%),
+      var(--bg-0);
+    color:var(--ink-0);
+    font-family:var(--sans);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--teal);}
+
+  .wrap{max-width:1160px;margin:0 auto;padding:56px 24px 96px;}
+
+  /* ---------- header / hero ---------- */
+  header.hero{
+    display:grid;
+    grid-template-columns:1.05fr 1fr;
+    gap:48px;
+    align-items:start;
+  }
+  @media (max-width:880px){ header.hero{grid-template-columns:1fr;} }
+
+  .kicker{
+    font-family:var(--sans);
+    font-size:13px;
+    letter-spacing:.02em;
+    color:var(--teal);
+    margin:0 0 14px;
+    font-weight:600;
+  }
+  h1{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:clamp(34px,4.6vw,56px);
+    line-height:1.05;
+    margin:0 0 18px;
+    max-width:12ch;
+    letter-spacing:-0.01em;
+  }
+  p.lead{
+    font-size:17px;
+    color:var(--ink-1);
+    max-width:46ch;
+    margin:0 0 28px;
+  }
+
+  .mic-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:22px;}
+
+  button.mic{
+    position:relative;
+    width:64px;height:64px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:var(--bg-2);
+    color:var(--ink-0);
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    flex:none;
+    transition:border-color .2s ease, background .2s ease, transform .15s ease;
+  }
+  button.mic:hover{border-color:var(--gold-dim); transform:translateY(-1px);}
+  button.mic:active{transform:translateY(0);}
+  button.mic svg{width:24px;height:24px;}
+  button.mic.listening{
+    background:var(--gold);
+    color:#1B1408;
+    border-color:var(--gold);
+    animation:pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(231,169,76,.45);}
+    50%{box-shadow:0 0 0 14px rgba(231,169,76,0);}
+  }
+  .mic-status{font-size:14px;color:var(--ink-1);}
+  .mic-status strong{color:var(--ink-0); font-weight:600;}
+
+  .transcript{
+    min-height:64px;
+    padding:14px 16px;
+    background:var(--bg-1);
+    border:1px solid var(--line);
+    border-radius:12px;
+    font-size:16px;
+    color:var(--ink-1);
+    letter-spacing:.01em;
+  }
+  .transcript .ch{transition:color .15s ease;}
+  .transcript .ch.active{color:var(--gold); font-weight:600;}
+  .transcript .ch.done{color:var(--ink-0);}
+  .transcript.empty::before{content:"Nothing signed yet — press the mic or type below.";color:var(--ink-2);}
+
+  .controls-row{
+    display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;
+  }
+  button.pill{
+    font-family:var(--sans);
+    font-size:13px;
+    padding:9px 16px;
+    border-radius:100px;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--ink-1);
+    cursor:pointer;
+    transition:border-color .2s ease, color .2s ease, background .2s ease;
+  }
+  button.pill:hover{border-color:var(--ink-2); color:var(--ink-0);}
+  button.pill:disabled{opacity:.4; cursor:not-allowed;}
+
+  .type-box{margin-top:22px;}
+  .type-box label{display:block; font-size:13px; color:var(--ink-2); margin-bottom:8px;}
+  .type-row{display:flex; gap:10px;}
+  textarea{
+    flex:1;
+    resize:vertical;
+    min-height:44px;
+    max-height:120px;
+    padding:11px 13px;
+    background:var(--bg-1);
+    border:1px solid var(--line);
+    border-radius:10px;
+    color:var(--ink-0);
+    font-family:var(--sans);
+    font-size:14px;
+  }
+  textarea:focus, button:focus-visible, input:focus-visible{
+    outline:2px solid var(--teal); outline-offset:2px;
+  }
+  button.solid{
+    background:var(--gold);
+    color:#1B1408;
+    border:none;
+    border-radius:10px;
+    padding:0 20px;
+    font-family:var(--sans);
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+  }
+  button.solid:hover{filter:brightness(1.06);}
+
+  .support-note{font-size:13px;color:var(--ink-2); margin-top:10px;}
+
+  /* ---------- stage ---------- */
+  .stage{
+    position:relative;
+    background:
+      radial-gradient(240px 200px at 50% 18%, #3a3427 0%, transparent 70%),
+      linear-gradient(180deg, var(--bg-1), var(--bg-0));
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:26px 26px 20px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .stage-top{
+    display:flex; justify-content:space-between; align-items:center;
+    width:100%; margin-bottom:6px;
+  }
+  .stage-label{font-size:13px; color:var(--ink-2);}
+  .skin-swatches{display:flex; gap:6px;}
+  .swatch{
+    width:20px;height:20px;border-radius:50%;
+    border:2px solid transparent;
+    cursor:pointer;
+    padding:0;
+  }
+  .swatch.active{border-color:var(--ink-0);}
+
+  .hand-holder{
+    width:100%;
+    max-width:320px;
+    aspect-ratio:240/330;
+    filter:url(#handShadow);
+  }
+  .hand-holder svg{width:100%; height:100%; display:block; overflow:visible;}
+
+  .floor{
+    width:70%;height:18px;
+    margin-top:2px;
+    background:radial-gradient(ellipse at center, rgba(0,0,0,.5), transparent 70%);
+  }
+
+  .letter-readout{
+    margin-top:8px;
+    display:flex;
+    align-items:baseline;
+    gap:12px;
+  }
+  .letter-readout .big{
+    font-family:var(--serif);
+    font-size:44px;
+    font-weight:600;
+    min-width:1.1ch;
+    text-align:center;
+    color:var(--gold);
+  }
+  .letter-readout .caption{font-size:13px; color:var(--ink-2);}
+
+  .speed-row{
+    width:100%; max-width:320px;
+    margin-top:14px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .speed-row label{font-size:12px; color:var(--ink-2); flex:none;}
+  input[type=range]{flex:1; accent-color:var(--gold);}
+
+  /* ---------- reference grid ---------- */
+  details.reference{
+    margin-top:64px;
+    border-top:1px solid var(--line);
+    padding-top:28px;
+  }
+  details.reference summary{
+    cursor:pointer;
+    list-style:none;
+    display:flex; align-items:center; gap:10px;
+    font-family:var(--serif);
+    font-size:22px;
+    color:var(--ink-0);
+  }
+  details.reference summary::-webkit-details-marker{display:none;}
+  details.reference summary .arrow{
+    display:inline-block; transition:transform .2s ease; color:var(--ink-2); font-size:16px;
+  }
+  details.reference[open] summary .arrow{transform:rotate(90deg);}
+  .ref-sub{font-size:14px; color:var(--ink-1); margin:8px 0 24px; max-width:60ch;}
+
+  .ref-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(96px,1fr));
+    gap:18px;
+  }
+  .ref-cell{
+    background:var(--bg-1);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 6px 8px;
+    text-align:center;
+  }
+  .ref-cell .mini-holder{width:52px; height:71px; margin:0 auto;}
+  .ref-cell .mini-holder svg{width:100%;height:100%;overflow:visible;}
+  .ref-cell .letter{font-family:var(--serif); font-size:15px; margin-top:4px; color:var(--ink-1);}
+
+  footer{
+    margin-top:64px;
+    font-size:13px;
+    color:var(--ink-2);
+    border-top:1px solid var(--line);
+    padding-top:20px;
+    max-width:70ch;
+  }
+
+  .phalanx{fill:url(#skinGrad); stroke:#00000022; stroke-width:1;}
+  .joint{fill:url(#skinGrad); stroke:none;}
+  .nail{fill:#ffffff99;}
+  .palm{fill:url(#palmGrad); stroke:#00000022; stroke-width:1;}
+  .wrist-shape{fill:url(#palmGrad); stroke:#00000022; stroke-width:1;}
+  .crease{fill:none; stroke:#00000030; stroke-width:2; stroke-linecap:round;}
+
+  @media (prefers-reduced-motion: reduce){
+    button.mic.listening{animation:none;}
+  }
+
+
+  /* Light theme only — functionality unchanged */
+  :root{
+    --bg-0:#f7f5ff;
+    --bg-1:#ffffff;
+    --bg-2:#f1edff;
+    --ink-0:#30253c;
+    --ink-1:#6f647d;
+    --ink-2:#9a90a7;
+    --gold:#8e4ed0;
+    --gold-dim:#b99ad9;
+    --teal:#6b63d8;
+    --line:#e7e0f0;
+  }
+
+  body{
+    background:linear-gradient(135deg,#ffffff 0%,#f7f5ff 55%,#eef3ff 100%);
+    color:var(--ink-0);
+  }
+  button.mic{background:#f1edff;color:var(--ink-0);border-color:#e2d9ef;}
+  button.mic:hover{border-color:#b99ad9;}
+  button.mic.listening{background:#8e4ed0;color:#fff;border-color:#8e4ed0;}
+  .transcript{background:#fff;border-color:#e7e0f0;color:var(--ink-1);box-shadow:0 8px 24px rgba(80,55,120,.05);}
+  .transcript .ch.active{color:#8e4ed0;}
+  .transcript .ch.done{color:#30253c;}
+  textarea{background:#fff;border-color:#e7e0f0;color:#30253c;}
+  button.pill{border-color:#e7e0f0;color:#6f647d;background:#fff;}
+  button.pill:hover{border-color:#b8a7ca;color:#30253c;background:#faf8ff;}
+  button.solid{background:linear-gradient(135deg,#b75af1,#6b92f2);color:#fff;}
+  .stage{
+    background:linear-gradient(180deg,#ffffff 0%,#f7f5ff 100%);
+    border-color:#e5deed;
+    box-shadow:0 18px 45px rgba(70,45,105,.08);
+  }
+  .letter-readout .big{color:#8e4ed0;}
+  input[type=range]{accent-color:#8e4ed0;}
+  details.reference{border-top-color:#e7e0f0;}
+  details.reference summary{color:#30253c;}
+  .ref-cell{background:#fff;border-color:#e7e0f0;box-shadow:0 6px 18px rgba(70,45,105,.05);}
+  .ref-cell .letter{color:#6f647d;}
+  footer{border-top-color:#e7e0f0;color:#9a90a7;}
+  a{color:#6b63d8;}
+
+</style>
+</head>
+<body>
+
+<!-- shared gradients / filter, referenced by every hand instance on the page -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="skinGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" style="stop-color:var(--skin-hi)"/>
+      <stop offset="55%" style="stop-color:var(--skin-base)"/>
+      <stop offset="100%" style="stop-color:var(--skin-shadow)"/>
+    </linearGradient>
+    <linearGradient id="palmGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" style="stop-color:var(--skin-base)"/>
+      <stop offset="100%" style="stop-color:var(--skin-shadow)"/>
+    </linearGradient>
+    <filter id="handShadow" x="-40%" y="-20%" width="180%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div>
+      <p class="kicker">Handspeak</p>
+      <h1>Speak, and watch it signed.</h1>
+      <p class="lead">Say something out loud. Handspeak listens, then fingerspells it back letter by letter with an animated hand — built for the browser, no app or install.</p>
+
+      <div class="mic-row">
+        <button class="mic" id="micBtn" aria-pressed="false" aria-label="Start speaking">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z"/>
+            <path d="M19 11a7 7 0 0 1-14 0"/>
+            <path d="M12 18v3"/>
+          </svg>
+        </button>
+        <div class="mic-status" id="micStatus">Press the mic and start talking.</div>
+      </div>
+
+      <div class="transcript empty" id="transcript" aria-live="polite"></div>
+
+      <div class="controls-row">
+        <button class="pill" id="replayBtn" disabled>Replay</button>
+        <button class="pill" id="stopBtn" disabled>Stop signing</button>
+        <button class="pill" id="clearBtn" disabled>Clear</button>
+      </div>
+
+      <div class="type-box">
+        <label for="typeInput">No mic, or a noisy room? Type it instead.</label>
+        <div class="type-row">
+          <textarea id="typeInput" placeholder="Type something to sign…" rows="1"></textarea>
+          <button class="solid" id="typeBtn">Sign it</button>
+        </div>
+      </div>
+
+      <p class="support-note" id="supportNote"></p>
+    </div>
+
+    <div class="stage">
+      <div class="stage-top">
+        <span class="stage-label">Hand</span>
+        <div class="skin-swatches" id="skinSwatches" role="group" aria-label="Skin tone"></div>
+      </div>
+
+      <div class="hand-holder" id="mainHandHolder"></div>
+      <div class="floor"></div>
+
+      <div class="letter-readout">
+        <span class="big" id="bigLetter">–</span>
+        <span class="caption">current letter</span>
+      </div>
+
+      <div class="speed-row">
+        <label for="speed">Slower</label>
+        <input type="range" id="speed" min="280" max="1200" value="650" step="10">
+        <label for="speed">Faster</label>
+      </div>
+    </div>
+  </header>
+
+  <details class="reference">
+    <summary><span class="arrow">▸</span> ASL fingerspelling reference</summary>
+    <p class="ref-sub">A quick alphabet chart, drawn with the same hand model above. Fingerspelling is only one small corner of American Sign Language — full ASL has its own grammar and word order, distinct from spoken English, and isn't captured by spelling words out.</p>
+    <div class="ref-grid" id="refGrid"></div>
+  </details>
+
+  <footer>
+    Handspeak runs entirely in your browser: speech recognition uses the Web Speech API (Chrome, Edge, Safari), and the hand is a hand-built, parametric SVG — no images, no video, no external hand-tracking data. The handshapes are a simplified, stylized approximation for demo and learning purposes, not a certified ASL reference.
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------------------------------------------------------------- *
+   *  Geometry: one parametric hand, reused at any size.               *
+   * ---------------------------------------------------------------- */
+  const VB = { w: 240, h: 330 };
+  const GEO = {
+    palm:  { x: 60, y: 145, w: 130, h: 145, rx: 38 },
+    wrist: { x: 98, y: 266, w: 54,  h: 58,  rx: 14 },
+    fingers: {
+      index:  { x: 100, y: 150, proxLen: 68, proxW: 24, distLen: 48, distW: 19 },
+      middle: { x: 128, y: 147, proxLen: 78, proxW: 26, distLen: 55, distW: 20 },
+      ring:   { x: 156, y: 150, proxLen: 68, proxW: 24, distLen: 48, distW: 19 },
+      pinky:  { x: 181, y: 158, proxLen: 50, proxW: 19, distLen: 35, distW: 15 }
+    },
+    thumb: { x: 58, y: 222, proxLen: 56, proxW: 27, distLen: 40, distW: 21 }
+  };
+
+  function el(tag, attrs){
+    const e = document.createElementNS(NS, tag);
+    for(const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  // one rotating joint: base translate is baked in, rotation is animated on top of it
+  function makeJoint(baseTranslate){
+    const g = el("g", { transform: baseTranslate + " rotate(0)" });
+    return { el: g, base: baseTranslate, angle: 0, raf: null };
+  }
+
+  function buildFinger(root, cfg){
+    const mcp = makeJoint(`translate(${cfg.x},${cfg.y})`);
+    const prox = el("rect", {
+      x: -cfg.proxW/2, y: -cfg.proxLen, width: cfg.proxW, height: cfg.proxLen,
+      rx: cfg.proxW/2, class: "phalanx"
+    });
+    const knuckle = el("circle", { cx:0, cy:0, r: cfg.proxW/2 - 1, class:"joint" });
+    mcp.el.appendChild(knuckle);
+    mcp.el.appendChild(prox);
+
+    const pip = makeJoint(`translate(0,${-cfg.proxLen})`);
+    const dist = el("rect", {
+      x: -cfg.distW/2, y: -cfg.distLen, width: cfg.distW, height: cfg.distLen,
+      rx: cfg.distW/2, class: "phalanx"
+    });
+    const pipJoint = el("circle", { cx:0, cy:0, r: cfg.distW/2 - 1, class:"joint" });
+    const nail = el("ellipse", {
+      cx:0, cy: -cfg.distLen + cfg.distW*0.55, rx: cfg.distW*0.28, ry: cfg.distW*0.4, class:"nail"
+    });
+    pip.el.appendChild(pipJoint);
+    pip.el.appendChild(dist);
+    pip.el.appendChild(nail);
+
+    mcp.el.appendChild(pip.el);
+    root.appendChild(mcp.el);
+    return { mcpG: mcp, pipG: pip };
+  }
+
+  function buildHand(){
+    const svg = el("svg", { viewBox: `0 0 ${VB.w} ${VB.h}` });
+
+    const wrist = el("rect", Object.assign({ class:"wrist-shape" }, {
+      x: GEO.wrist.x, y: GEO.wrist.y, width: GEO.wrist.w, height: GEO.wrist.h, rx: GEO.wrist.rx
+    }));
+    svg.appendChild(wrist);
+
+    const palm = el("rect", Object.assign({ class:"palm" }, {
+      x: GEO.palm.x, y: GEO.palm.y, width: GEO.palm.w, height: GEO.palm.h, rx: GEO.palm.rx
+    }));
+    svg.appendChild(palm);
+
+    // a couple of soft palm creases for a touch of realism
+    svg.appendChild(el("path", { class:"crease", d:"M85 220 Q110 235 150 225" }));
+    svg.appendChild(el("path", { class:"crease", d:"M90 250 Q120 262 155 252" }));
+
+    // draw back-to-front: pinky, ring, index, middle, thumb on top
+    const pinky  = buildFinger(svg, GEO.fingers.pinky);
+    const ring   = buildFinger(svg, GEO.fingers.ring);
+    const index  = buildFinger(svg, GEO.fingers.index);
+    const middle = buildFinger(svg, GEO.fingers.middle);
+    const thumb  = buildFinger(svg, GEO.thumb);
+
+    return { svg, index, middle, ring, pinky, thumb };
+  }
+
+  /* ---------------------------------------------------------------- *
+   *  Poses: one entry per letter, expressed as finger "states".      *
+   * ---------------------------------------------------------------- */
+  const FAN = { index:-12, middle:0, ring:12, pinky:24 };
+
+  function stateAngles(state, fan){
+    switch(state){
+      case "ext":          return [fan, 8];
+      case "extOut":        return [fan - 14, 6];
+      case "extIn":         return [fan + 14, 6];
+      case "half":          return [fan + 18, 58];
+      case "hook":          return [fan - 4, 72];
+      case "curl":          return [fan + 34, 124];
+      case "curlTight":     return [fan + 34, 132];
+      default:               return [fan, 8];
+    }
+  }
+
+  function fingers(i, m, r, p){
+    return {
+      index:  stateAngles(i, FAN.index),
+      middle: stateAngles(m, FAN.middle),
+      ring:   stateAngles(r, FAN.ring),
+      pinky:  stateAngles(p, FAN.pinky)
+    };
+  }
+
+  const RAW = {
+    A: { f: fingers("curl","curl","curl","curl"),         t: [-15, 10] },
+    B: { f: fingers("ext","ext","ext","ext"),              t: [68, 25] },
+    C: { f: fingers("half","half","half","half"),          t: [15, 35] },
+    D: { f: fingers("ext","curl","curl","curl"),           t: [38, 55] },
+    E: { f: fingers("curlTight","curlTight","curlTight","curlTight"), t: [55, 75] },
+    F: { f: fingers("half","ext","ext","ext"),              t: [42, 48] },
+    G: { f: fingers("extOut","curl","curl","curl"),        t: [-28, 10] },
+    H: { f: fingers("extOut","extOut","curl","curl"),      t: [36, 38] },
+    I: { f: fingers("curl","curl","curl","ext"),            t: [52, 20] },
+    J: { f: fingers("curl","curl","curl","ext"),            t: [52, 20] },
+    K: { f: fingers("extOut","extOut","curl","curl"),      t: [0, 28] },
+    L: { f: fingers("ext","curl","curl","curl"),            t: [-42, 0] },
+    M: { f: fingers("curlTight","curlTight","curlTight","curlTight"), t: [62, 66] },
+    N: { f: fingers("curlTight","curlTight","curl","curl"), t: [58, 58] },
+    O: { f: fingers("half","half","half","half"),          t: [32, 52] },
+    P: { f: fingers("extOut","extOut","curl","curl"),      t: [4, 30] },
+    Q: { f: fingers("extOut","curl","curl","curl"),        t: [-24, 12] },
+    R: { f: fingers("extIn","extOut","curl","curl"),       t: [40, 28] },
+    S: { f: fingers("curlTight","curlTight","curlTight","curlTight"), t: [78, 42] },
+    T: { f: fingers("curl","curl","curl","curl"),            t: [26, 18] },
+    U: { f: fingers("ext","ext","curl","curl"),              t: [46, 28] },
+    V: { f: fingers("extOut","extIn","curl","curl"),        t: [42, 28] },
+    W: { f: fingers("extOut","ext","extIn","curl"),         t: [38, 28] },
+    X: { f: fingers("hook","curl","curl","curl"),            t: [36, 26] },
+    Y: { f: fingers("curl","curl","curl","ext"),              t: [-46, 0] },
+    Z: { f: fingers("ext","curl","curl","curl"),              t: [36, 16] },
+    " ": { f: fingers("ext","ext","ext","ext"),              t: [-10, 10] }
+  };
+
+  const POSES = {};
+  Object.keys(RAW).forEach(letter => {
+    POSES[letter] = { index: RAW[letter].f.index, middle: RAW[letter].f.middle,
+                       ring: RAW[letter].f.ring, pinky: RAW[letter].f.pinky, thumb: RAW[letter].t };
+  });
+
+  /* ---------------------------------------------------------------- *
+   *  Animating a joint toward a target angle.                        *
+   * ---------------------------------------------------------------- */
+  function animateJoint(joint, toAngle, duration){
+    if(joint.raf) cancelAnimationFrame(joint.raf);
+    const from = joint.angle;
+    joint.angle = toAngle;
+    if(duration <= 0 || reduceMotion){
+      joint.el.setAttribute("transform", `${joint.base} rotate(${toAngle})`);
+      return;
+    }
+    const start = performance.now();
+    function step(now){
+      const t = Math.min(1, (now - start) / duration);
+      const eased = t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2) / 2;
+      const val = from + (toAngle - from) * eased;
+      joint.el.setAttribute("transform", `${joint.base} rotate(${val})`);
+      if(t < 1) joint.raf = requestAnimationFrame(step);
+    }
+    joint.raf = requestAnimationFrame(step);
+  }
+
+  function applyPose(hand, letter, animate, duration){
+    const p = POSES[letter] || POSES[" "];
+    const d = animate ? (duration || 320) : 0;
+    ["index","middle","ring","pinky"].forEach(name => {
+      animateJoint(hand[name].mcpG, p[name][0], d);
+      animateJoint(hand[name].pipG, p[name][1], d);
+    });
+    animateJoint(hand.thumb.mcpG, p.thumb[0], d);
+    animateJoint(hand.thumb.pipG, p.thumb[1], d);
+  }
+
+  /* ---------------------------------------------------------------- *
+   *  Main stage hand.                                                 *
+   * ---------------------------------------------------------------- */
+  const mainHand = buildHand();
+  document.getElementById("mainHandHolder").appendChild(mainHand.svg);
+  applyPose(mainHand, " ", false, 0);
+
+  /* ---------------------------------------------------------------- *
+   *  Reference grid — 26 tiny static hands, same model, no motion.    *
+   * ---------------------------------------------------------------- */
+  const refGrid = document.getElementById("refGrid");
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(letter => {
+    const cell = document.createElement("div");
+    cell.className = "ref-cell";
+    const holder = document.createElement("div");
+    holder.className = "mini-holder";
+    const h = buildHand();
+    applyPose(h, letter, false, 0);
+    holder.appendChild(h.svg);
+    const label = document.createElement("div");
+    label.className = "letter";
+    label.textContent = letter;
+    cell.appendChild(holder);
+    cell.appendChild(label);
+    refGrid.appendChild(cell);
+  });
+
+  /* ---------------------------------------------------------------- *
+   *  Skin tone picker.                                                *
+   * ---------------------------------------------------------------- */
+  const TONES = [
+    { hi:"#F6D3AE", base:"#E5AE81", shadow:"#B87F55" },
+    { hi:"#F1C79A", base:"#D89A63", shadow:"#A5713E" },
+    { hi:"#D9A myPos" , base:"#B5794A", shadow:"#7E5230" }, // placeholder replaced below
+  ];
+  // (defined properly to avoid stray characters)
+  const SKIN_TONES = [
+    { hi:"#F6D3AE", base:"#E5AE81", shadow:"#B87F55" },
+    { hi:"#EFC59A", base:"#CE9A66", shadow:"#9C6E42" },
+    { hi:"#D9A876", base:"#A9713F", shadow:"#78502C" },
+    { hi:"#C08D5C", base:"#7A5232", shadow:"#4E3420" }
+  ];
+  const swatchWrap = document.getElementById("skinSwatches");
+  SKIN_TONES.forEach((tone, i) => {
+    const b = document.createElement("button");
+    b.className = "swatch" + (i === 0 ? " active" : "");
+    b.style.background = tone.base;
+    b.setAttribute("aria-label", "Skin tone " + (i+1));
+    b.addEventListener("click", () => {
+      document.documentElement.style.setProperty("--skin-hi", tone.hi);
+      document.documentElement.style.setProperty("--skin-base", tone.base);
+      document.documentElement.style.setProperty("--skin-shadow", tone.shadow);
+      Array.from(swatchWrap.children).forEach(c => c.classList.remove("active"));
+      b.classList.add("active");
+    });
+    swatchWrap.appendChild(b);
+  });
+
+  /* ---------------------------------------------------------------- *
+   *  Playback sequencer.                                              *
+   * ---------------------------------------------------------------- */
+  const transcriptEl = document.getElementById("transcript");
+  const bigLetterEl = document.getElementById("bigLetter");
+  const replayBtn = document.getElementById("replayBtn");
+  const stopBtn = document.getElementById("stopBtn");
+  const clearBtn = document.getElementById("clearBtn");
+  const speedInput = document.getElementById("speed");
+
+  let queue = [];        // array of { ch, span }
+  let playing = false;
+  let stopRequested = false;
+  let fullText = "";
+
+  function sleep(ms){ return new Promise(res => setTimeout(res, ms)); }
+
+  function resetTranscriptDisplay(){
+    transcriptEl.innerHTML = "";
+    transcriptEl.classList.add("empty");
+  }
+
+  function pushTextToDisplay(text){
+    transcriptEl.classList.remove("empty");
+    const added = [];
+    for(const ch of text){
+      const span = document.createElement("span");
+      span.className = "ch";
+      span.textContent = ch;
+      transcriptEl.appendChild(span);
+      added.push({ ch: ch.toUpperCase(), span });
+    }
+    return added;
+  }
+
+  function enqueue(text){
+    if(!text) return;
+    fullText += text;
+    const added = pushTextToDisplay(text);
+    queue = queue.concat(added);
+    replayBtn.disabled = false;
+    clearBtn.disabled = false;
+    if(!playing) runQueue();
+  }
+
+  async function runQueue(){
+    playing = true;
+    stopRequested = false;
+    stopBtn.disabled = false;
+    while(queue.length && !stopRequested){
+      const item = queue.shift();
+      const ch = /[A-Z]/.test(item.ch) ? item.ch : " ";
+      item.span.classList.add("active");
+      bigLetterEl.textContent = ch === " " ? "·" : ch;
+      applyPose(mainHand, ch, true, ch === " " ? 220 : 320);
+      const speed = Number(speedInput.value);
+      await sleep(ch === " " ? Math.max(140, speed * 0.35) : speed);
+      item.span.classList.remove("active");
+      item.span.classList.add("done");
+    }
+    playing = false;
+    stopBtn.disabled = true;
+    if(!stopRequested){
+      bigLetterEl.textContent = "–";
+      applyPose(mainHand, " ", true, 300);
+    }
+  }
+
+  stopBtn.addEventListener("click", () => {
+    stopRequested = true;
+    queue = [];
+    playing = false;
+    stopBtn.disabled = true;
+    bigLetterEl.textContent = "–";
+    applyPose(mainHand, " ", true, 250);
+  });
+
+  replayBtn.addEventListener("click", () => {
+    stopRequested = true;
+    queue = [];
+    playing = false;
+    resetTranscriptDisplay();
+    const text = fullText;
+    fullText = "";
+    setTimeout(() => enqueue(text), 30);
+  });
+
+  clearBtn.addEventListener("click", () => {
+    stopRequested = true;
+    queue = [];
+    playing = false;
+    fullText = "";
+    resetTranscriptDisplay();
+    bigLetterEl.textContent = "–";
+    applyPose(mainHand, " ", true, 250);
+    replayBtn.disabled = true;
+    clearBtn.disabled = true;
+    stopBtn.disabled = true;
+  });
+
+  /* ---------------------------------------------------------------- *
+   *  Manual text entry.                                               *
+   * ---------------------------------------------------------------- */
+  const typeInput = document.getElementById("typeInput");
+  const typeBtn = document.getElementById("typeBtn");
+
+  function signTyped(){
+    const val = typeInput.value.trim();
+    if(!val) return;
+    stopRequested = true;
+    queue = [];
+    playing = false;
+    fullText = "";
+    resetTranscriptDisplay();
+    const cleaned = val.toUpperCase().replace(/[^A-Z ]/g, " ").replace(/\s+/g, " ").trim();
+    typeInput.value = "";
+    setTimeout(() => enqueue(cleaned), 30);
+  }
+  typeBtn.addEventListener("click", signTyped);
+  typeInput.addEventListener("keydown", e => {
+    if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); signTyped(); }
+  });
+
+  /* ---------------------------------------------------------------- *
+   *  Speech recognition.                                              *
+   * ---------------------------------------------------------------- */
+  const micBtn = document.getElementById("micBtn");
+  const micStatus = document.getElementById("micStatus");
+  const supportNote = document.getElementById("supportNote");
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let listening = false;
+
+  if(!SR){
+    supportNote.textContent = "Your browser doesn't support live speech recognition — Chrome, Edge or Safari will work best. Typing still signs perfectly well.";
+    micBtn.disabled = true;
+    micBtn.style.opacity = 0.4;
+    micStatus.textContent = "Mic not available in this browser — type instead.";
+  } else {
+    recognition = new SR();
+    recognition.lang = "en-US";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    let sessionFinal = "";
+
+    recognition.onresult = (event) => {
+      let interim = "";
+      let newlyFinal = "";
+      for(let i = event.resultIndex; i < event.results.length; i++){
+        const result = event.results[i];
+        if(result.isFinal){
+          newlyFinal += result[0].transcript;
+        } else {
+          interim += result[0].transcript;
+        }
+      }
+      if(newlyFinal){
+        const cleaned = newlyFinal.toUpperCase().replace(/[^A-Z ]/g, " ").replace(/\s+/g, " ");
+        sessionFinal += cleaned;
+        enqueue(cleaned);
+        micStatus.innerHTML = "Heard: <strong>" + newlyFinal.trim() + "</strong>";
+      } else if(interim){
+        micStatus.innerHTML = "Listening… <strong>" + interim.trim() + "</strong>";
+      }
+    };
+
+    recognition.onerror = (event) => {
+      if(event.error === "not-allowed" || event.error === "service-not-allowed"){
+        micStatus.textContent = "Microphone access was blocked — allow it in your browser to use voice.";
+        listening = false;
+        micBtn.classList.remove("listening");
+        micBtn.setAttribute("aria-pressed", "false");
+      } else if(event.error !== "no-speech"){
+        micStatus.textContent = "Mic hiccup (" + event.error + ") — still listening.";
+      }
+    };
+
+    recognition.onend = () => {
+      if(listening){
+        // continuous mode can still time out on some browsers after silence — pick back up
+        try{ recognition.start(); } catch(e){ /* already running */ }
+      }
+    };
+
+    micBtn.addEventListener("click", () => {
+      if(!listening){
+        resetTranscriptDisplay();
+        fullText = "";
+        queue = [];
+        stopRequested = true;
+        playing = false;
+        replayBtn.disabled = true;
+        clearBtn.disabled = true;
+        try{
+          recognition.start();
+          listening = true;
+          micBtn.classList.add("listening");
+          micBtn.setAttribute("aria-pressed", "true");
+          micBtn.setAttribute("aria-label", "Stop listening");
+          micStatus.textContent = "Listening…";
+        } catch(e){ /* already started */ }
+      } else {
+        listening = false;
+        recognition.stop();
+        micBtn.classList.remove("listening");
+        micBtn.setAttribute("aria-pressed", "false");
+        micBtn.setAttribute("aria-label", "Start speaking");
+        micStatus.textContent = "Stopped. Press the mic to talk again.";
+      }
+    });
+  }
+
+})();
+</script>
+</body>
+</html>
